@@ -12,9 +12,12 @@ public class Program
     {
         Console.OutputEncoding = Encoding.Unicode;
         Console.InputEncoding = Encoding.Unicode;
+        Console.WriteLine("DoomFontHelper Tool by MrIkso");
         if (args.Length == 0)
         {
-            Console.WriteLine("Please specify an argument: repackfront, repackbim, fontinfo, or extractbim.");
+            Console.WriteLine("Please specify an argument: repackfront, repackbim, fontinfo, extractbim, biminfo, fontvisualize");
+            Console.WriteLine("Preass any key to exit.");
+            Console.ReadKey();
             return;
         }
 
