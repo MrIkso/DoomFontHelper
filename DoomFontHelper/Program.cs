@@ -43,7 +43,7 @@ public class Program
                 string inputBimFilePath = args[2];
                 string outputBimFilePath = args[3];
 
-                RepackBimFile(inputBimFilePath, ddsFilePath, outputBimFilePath);
+                RepackBimFile(ddsFilePath, inputBimFilePath, outputBimFilePath);
                 break;
 
             case "extractbim":
@@ -106,6 +106,13 @@ public class Program
             Console.WriteLine("Failed to generate font data.");
             return;
         }
+
+        var outputDirectory = Path.GetDirectoryName(outputFontFilePath);
+        if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+        {
+            Directory.CreateDirectory(outputDirectory);
+        }
+
         var fontParser = new IdfParser(inputFontFilePath);
         // copying config from old font file
         newFontData.Config.Version = fontParser.IdfFileData.Config.Version;
@@ -226,12 +233,30 @@ public class Program
         Console.WriteLine($"DDS file saved to: {savePath}");
     }
 
-    private static void RepackBimFile(string ddsFilePath, string inputFilePath, string oputputFilePath)
+    private static void RepackBimFile(string textureFilePath, string inputFilePath, string oputputFilePath)
     {
         try
         {
+            if (!File.Exists(textureFilePath))
+            {
+                Console.WriteLine($"Error: Texture file {inputFilePath} not found.");
+                return;
+            }
+            var outputDirectory = Path.GetDirectoryName(oputputFilePath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
             var parser = new BimParser(inputFilePath);
-            parser.ReplaceDDSImageInBim(ddsFilePath, oputputFilePath);
+            if (textureFilePath.EndsWith(".png")) {
+                parser.ReplacePngImageInBim(textureFilePath, oputputFilePath);
+            }
+            else
+            {
+                parser.ReplaceDDSImageInBim(textureFilePath, oputputFilePath);
+            }
+           
             Console.WriteLine($"File processed and saved to: {oputputFilePath}");
         }
         catch (Exception ex)
