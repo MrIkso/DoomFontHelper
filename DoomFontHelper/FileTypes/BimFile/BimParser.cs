@@ -85,10 +85,7 @@ namespace DoomFontHelper.FileTypes.BimFile
                 writer.WriteReverse(mip.MipPixelWidth);
                 writer.WriteReverse(mip.MipPixelHeight);
                 writer.WriteReverse(mip.CompressedSize);
-            }
 
-            foreach (var mip in bimImageFile.MipMaps)
-            {
                 if (mip.PixelData != null && mip.PixelData.Length > 0)
                 {
                     writer.Write(mip.PixelData);
@@ -213,7 +210,7 @@ namespace DoomFontHelper.FileTypes.BimFile
             ddsFile.Faces.Add(face);
             //var surface = new DdsMipMap(mip.PixelData, (uint)mip.MipPixelWidth, (uint)mip.MipPixelHeight);
 
-          //  ddsFile.Faces[0].MipMaps[0] = surface;
+            //  ddsFile.Faces[0].MipMaps[0] = surface;
 
             for (var mipCounter = 0; mipCounter < copiedBimImage.MipMaps.Count; mipCounter++)
             {
