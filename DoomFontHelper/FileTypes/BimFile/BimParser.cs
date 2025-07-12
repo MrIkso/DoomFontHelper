@@ -40,7 +40,7 @@ namespace DoomFontHelper.FileTypes.BimFile
             file.Header.StreamDBMipCount = reader.ReadInt32Reverse();
             file.Header.UnknownByte = reader.ReadByte();
 
-            // Read mipmap information
+            // Read mipmap information and pixel data
             var mipMaps = new List<BimageMipmap>();
             for (int i = 0; i < file.Header.MipCount; i++)
             {
@@ -51,16 +51,9 @@ namespace DoomFontHelper.FileTypes.BimFile
                 mip.MipPixelWidth = reader.ReadInt32Reverse();
                 mip.MipPixelHeight = reader.ReadInt32Reverse();
                 mip.CompressedSize = reader.ReadInt32Reverse();
-                mipMaps.Add(mip);
-            }
+                mip.PixelData = reader.ReadBytes(mip.CompressedSize);
 
-            // Read pixel data for each mipmap
-            foreach (var mip in mipMaps)
-            {
-                if (mip.CompressedSize > 0)
-                {
-                    mip.PixelData = reader.ReadBytes(mip.CompressedSize);
-                }
+                mipMaps.Add(mip);
             }
 
             file.MipMaps.AddRange(mipMaps);
@@ -155,12 +148,15 @@ namespace DoomFontHelper.FileTypes.BimFile
                 for (int j = 0; j < finalMips.Count; j++)
                 {
                     var currentMip = finalMips[j];
-                    if (currentMip.PixelData == null) continue;
+                    if (currentMip.PixelData == null)
+                    {
+                        throw new ArgumentException("Pixel Data Not Found!");
+                    }
 
                     byte[] convertedData = TextureConverter.ConvertA8ToRgba8(currentMip.PixelData, currentMip.MipPixelWidth, currentMip.MipPixelHeight);
 
                     currentMip.PixelData = convertedData;
-                   // currentMip.CompressedSize = convertedData.Length;
+                    currentMip.CompressedSize = convertedData.Length;
                     finalMips[j] = currentMip;
                 }
             }
@@ -172,12 +168,15 @@ namespace DoomFontHelper.FileTypes.BimFile
                 for (int j = 0; j < finalMips.Count; j++)
                 {
                     var currentMip = finalMips[j];
-                    if (currentMip.PixelData == null) continue;
+                    if (currentMip.PixelData == null)
+                    {
+                        throw new ArgumentException("Pixel Data Not Found!");
+                    }
 
                     byte[] convertedData = TextureConverter.ConvertLa8ToRgba8(currentMip.PixelData, currentMip.MipPixelWidth, currentMip.MipPixelHeight);
 
                     currentMip.PixelData = convertedData;
-                    //currentMip.CompressedSize = convertedData.Length;
+                    currentMip.CompressedSize = convertedData.Length;
                     finalMips[j] = currentMip;
                 }
             }
@@ -194,7 +193,7 @@ namespace DoomFontHelper.FileTypes.BimFile
                 {
                     ddsFile.header.dwFlags |= HeaderFlags.DdsdMipmapcount;
                     ddsFile.header.dwCaps |= HeaderCaps.DdscapsComplex | HeaderCaps.DdscapsMipmap;
-                    ddsFile.header.dwPitchOrLinearSize = /*(uint)info.MipCount*/1;
+                    ddsFile.header.dwPitchOrLinearSize = (uint)info.MipCount;
                 }
             }
             else
@@ -210,19 +209,19 @@ namespace DoomFontHelper.FileTypes.BimFile
                 throw new InvalidDataException($"Mip {mip.MipLevelIndex} has no pixel data.");
             }
 
-            var face = new DdsFace((uint)info.PixelWidth, (uint)info.PixelHeight, (uint)mip.PixelData.Length,/* info.MipCount*/1);
+            var face = new DdsFace((uint)info.PixelWidth, (uint)info.PixelHeight, (uint)mip.PixelData.Length, info.MipCount);
             ddsFile.Faces.Add(face);
-            var surface = new DdsMipMap(mip.PixelData, (uint)mip.MipPixelWidth, (uint)mip.MipPixelHeight);
+            //var surface = new DdsMipMap(mip.PixelData, (uint)mip.MipPixelWidth, (uint)mip.MipPixelHeight);
 
-            ddsFile.Faces[0].MipMaps[0] = surface;
+          //  ddsFile.Faces[0].MipMaps[0] = surface;
 
-            /*for (var mipCounter = 0; mipCounter < copiedBimImage.MipMaps.Count; mipCounter++)
+            for (var mipCounter = 0; mipCounter < copiedBimImage.MipMaps.Count; mipCounter++)
             {
                 var mipMod = copiedBimImage.MipMaps[mipCounter];
                 var surface = new DdsMipMap(mipMod.PixelData, (uint)mipMod.MipPixelWidth, (uint)mipMod.MipPixelHeight);
 
                 ddsFile.Faces[0].MipMaps[mipCounter] = surface;
-            }*/
+            }
 
             return ddsFile;
         }
