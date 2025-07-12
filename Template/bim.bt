@@ -1,0 +1,40 @@
+//------------------------------------------------
+//--- 010 Editor v15.0.2 Binary Template
+// This for texture files from Doom 2016
+//      File: bim.bt
+//   Authors: MrIkso
+//   Version: 1.0
+//   Purpose: 
+//  Category: 
+// File Mask: *.bimage
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+BigEndian();
+     
+struct Header {
+    uint32 Timestamp;
+    uint32 MagicAndVersion;
+    if (MagicAndVersion != 0x074D4942) { // "BIM"
+        Warning("Invalid BIM signature or version. Expected 0x074D4942");
+    }
+    int32  TextureType;
+    int32  PixelWidth;
+    int32  PixelHeight;
+    int32  Depth;
+    int32  MipCount;
+    byte   BoolIsStreamed;
+    int32  TextureFormat;
+    int32  TextureMaterialKind;
+    int32  StreamDBMipCount;
+    byte   UnknownByte;
+} header;
+
+struct MipmapEntry {
+    uint32 MipLevelIndex;
+    uint32 Unknown1;
+    int32  MipPixelWidth;
+    int32  MipPixelHeight;
+    int32  CompressedSize;
+    byte PixelData[CompressedSize];
+} mipmaps[header.MipCount]<optimize=false>;
